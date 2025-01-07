@@ -1,0 +1,13 @@
+
+[Unit]
+Description=HeadsetControl ChatMix Service
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/headsetcontrol_chatmix_sync loop
+WorkingDirectory=%h/.local/bin
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=default.target
