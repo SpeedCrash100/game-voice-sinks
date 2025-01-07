@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Sync the chatmix volume from headsetcontrol to pipewire sinks
+
+echo $(headsetcontrol -o ENV) > /tmp/headsetcontrol.env
+source /tmp/headsetcontrol.env
+
+if [ ${DEVICE_COUNT} -eq 0 ]; then
+    echo "No headsets connected"
+    exit 1;
+fi
+
+RAW_CHATMIX=${DEVICE_0_CHATMIX}
+
+CHATMIX_NORMALIZED=$(echo "(64 - ${RAW_CHATMIX})/64" | bc -l)
+
+set_chatmix ${CHATMIX_NORMALIZED}
