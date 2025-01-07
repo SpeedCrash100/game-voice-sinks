@@ -32,8 +32,9 @@ echo "Voice sink id: $VOICE_SINK_ID"
 
 DESIRED_CHATMIX=${1:-0}
 CLAMPED_CHATMIX=$(clamp "$DESIRED_CHATMIX" -1 1)
+CHATMIX=$(echo "$CLAMPED_CHATMIX ^ 3" | bc -l)
 
-echo "chatmix: $CLAMPED_CHATMIX"
+echo "chatmix: $CHATMIX"
 
 GAME_VOL=1
 VOICE_VOL=1
