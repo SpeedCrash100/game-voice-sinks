@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+# Usage: ./set_chatmix.sh <desired-chatmix>
+# Sets the desired chatmix [-1.0; 1.0]
+# If chatmix is positive, the game audio will be louder than voice.
+# If chatmix is negative, the voice will be louder than game audio.
+
+wpctl_get_id() {
+  local name=$1
+  ID=$(wpctl status | grep -E "^.*[0-9]+\. ${name}.*" | sed -n 's/.*\s\([0-9]\+\)\..*/\1/p')
+  echo "$ID"
+}
+
+clamp() {
+  local val=$1
+  local min=$2
+  local max=$3
+
+  if (( $(echo "$val < $min" | bc -l) )); then
+    echo "$min"
+  elif (( $(echo "$val > $max" | bc -l) )); then
+    echo "$max"
+  else
+    echo "$val"
+  fi
+}
+
+GAME_SINK_ID=$(wpctl_get_id 'Game Sink')
+VOICE_SINK_ID=$(wpctl_get_id 'Voice Sink')
+echo "Game sink id: $GAME_SINK_ID"
+echo "Voice sink id: $VOICE_SINK_ID"
+
+DESIRED_CHATMIX=${1:-0}
+CLAMPED_CHATMIX=$(clamp "$DESIRED_CHATMIX" -1 1)
+
+echo "chatmix: $CLAMPED_CHATMIX"
+
+GAME_VOL=1
+VOICE_VOL=1
+
+
+if (( $(echo "$CLAMPED_CHATMIX < 0.0" | bc -l) )); then
+    GAME_VOL=$(echo "1 + $CLAMPED_CHATMIX" | bc -l)
+else
+    VOICE_VOL=$(echo "1 - $CLAMPED_CHATMIX" | bc -l)
+fi
+
+echo "Game volume: $GAME_VOL"
+echo "Voice volume: $VOICE_VOL"
+
+wpctl set-volume "$GAME_SINK_ID" "$GAME_VOL"
+wpctl set-volume "$VOICE_SINK_ID" "$VOICE_VOL"
